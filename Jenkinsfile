@@ -1,10 +1,10 @@
 pipeline {
     agent {
-        docker {
-            image 'docker:cli'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
+    docker {
+        image 'docker:cli'
+        args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock'
     }
+}
 
     stages {
         stage('Checkout') {
