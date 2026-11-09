@@ -1,61 +1,41 @@
-
 pipeline {
     agent {
         docker {
-            image 'python:3.12-slim'
-            args '-u root:root'
+            image 'docker:cli'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
-    }
-
-    options {
-        timestamps()
-        disableConcurrentBuilds()
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo 'Checking out merged code...'
                 checkout scm
             }
         }
 
-        stage('Python Version') {
+        stage('Build Docker Image') {
             steps {
-                sh 'python --version'
-                sh 'pip --version'
+                sh 'docker build -t task-manager:latest .'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Test Docker Image') {
+            steps {
+                sh 'docker run --rm task-manager:latest python -m pytest -v'
+            }
+        }
+
+        stage('Deploy Application') {
             steps {
                 sh '''
-                    python -m pip install --upgrade pip
-                    pip install pytest
+                    docker rm -f task-manager || true
+                    docker run -d \
+                        --name task-manager \
+                        --restart unless-stopped \
+                        -p 8000:8000 \
+                        task-manager:latest
                 '''
             }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh 'python -m pytest -v'
-            }
-        }
-
-        stage('Success') {
-            steps {
-                echo 'Python tests passed inside Docker!'
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Jenkins pipeline completed successfully.'
-        }
-
-        failure {
-            echo 'Jenkins pipeline failed. Check console output.'
         }
     }
 }
