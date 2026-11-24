@@ -1,3 +1,4 @@
+
 version: 0.2
 
 phases:
@@ -5,7 +6,7 @@ phases:
     commands:
       - echo "Logging in to Amazon ECR..."
       - aws ecr get-login-password --region us-east-1 |
-        docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+        docker login --username AWS --password-stdin 538916376883.dkr.ecr.us-east-1.amazonaws.com
 
   build:
     commands:
@@ -13,9 +14,9 @@ phases:
       - docker build -t task-manager-api .
 
       - echo "Tagging image..."
-      - docker tag task-manager-api:latest YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/task-manager-api:latest
+      - docker tag task-manager-api:latest 538916376883.dkr.ecr.us-east-1.amazonaws.com/task-manager-api:latest
 
   post_build:
     commands:
       - echo "Pushing image to ECR..."
-      - docker push YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/task-manager-api:latest
+      - docker push 538916376883.dkr.ecr.us-east-1.amazonaws.com/task-manager-api:latest
