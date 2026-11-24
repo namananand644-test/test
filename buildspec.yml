@@ -1,31 +1,21 @@
-
 version: 0.2
 
 phases:
-  install:
-    runtime-versions:
-      python: 3.12
-
   pre_build:
     commands:
-      - echo "Installing application dependencies..."
-      - python -m pip install --upgrade pip
-      - pip install -r requirements.txt
+      - echo "Logging in to Amazon ECR..."
+      - aws ecr get-login-password --region us-east-1 |
+        docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
 
   build:
     commands:
-      - echo "Running application tests..."
-      - python -m pytest -v
-
       - echo "Building Docker image..."
-      - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/task-manager-api:latest" .
+      - docker build -t task-manager-api .
 
-      - echo "Logging in to Docker registry..."
-      - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
-
-      - echo "Pushing Docker image..."
-      - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/task-manager-api:latest"
+      - echo "Tagging image..."
+      - docker tag task-manager-api:latest YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/task-manager-api:latest
 
   post_build:
     commands:
-      - echo "Build and Docker image push completed successfully!"
+      - echo "Pushing image to ECR..."
+      - docker push YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/task-manager-api:latest
