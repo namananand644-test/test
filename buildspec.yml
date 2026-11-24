@@ -1,0 +1,31 @@
+
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+
+  pre_build:
+    commands:
+      - echo "Installing application dependencies..."
+      - python -m pip install --upgrade pip
+      - pip install -r requirements.txt
+
+  build:
+    commands:
+      - echo "Running application tests..."
+      - python -m pytest -v
+
+      - echo "Building Docker image..."
+      - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/task-manager-api:latest" .
+
+      - echo "Logging in to Docker registry..."
+      - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
+
+      - echo "Pushing Docker image..."
+      - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/task-manager-api:latest"
+
+  post_build:
+    commands:
+      - echo "Build and Docker image push completed successfully!"
